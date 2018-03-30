@@ -24,11 +24,15 @@ object Main {
       }
 
     val episodes = shows.flatMap{a =>
-      val url = s"http://www.streamlord.com/series.php?page=$a"
+      val url = s"http://www.streamlord.com/$a"
       def proc(doc: Browser#DocumentType): String = {
-        doc.>>(elementList("#season-wrapper > div > "))
-          .map(a => a.attr("href"))
-          .asJson.spaces4
+        val items = doc.>?>(elementList("#season-wrapper > div > ul > li > div.content > div.playpic > a[href]"))
+        if (items.isEmpty) {
+          throw new Exception(a)
+        }
+
+        val hrefs = items.get.map(_.attr("href"))
+        hrefs.asJson.spaces4
       }
 
       def dec(s: String): List[String] = decode[List[String]](s).right.get
