@@ -22,5 +22,18 @@ object Main {
 
         Init.cascade(url, proc, dec)
       }
+
+    val episodes = shows.flatMap{a =>
+      val url = s"http://www.streamlord.com/series.php?page=$a"
+      def proc(doc: Browser#DocumentType): String = {
+        doc.>>(elementList("#season-wrapper > div > "))
+          .map(a => a.attr("href"))
+          .asJson.spaces4
+      }
+
+      def dec(s: String): List[String] = decode[List[String]](s).right.get
+
+      Init.cascade(url, proc, dec)
+    }
   }
 }
